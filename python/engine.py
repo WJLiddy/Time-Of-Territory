@@ -658,7 +658,6 @@ def new_game(ais, seed, shuffle):
     # delete players with no AI.
     for i in range(4):
         if(ais[i] is None):
-            ais[i] = None
             remove_team(i,world_state)
 
     player_discovery = [set(),set(),set(),set()]
