@@ -74,7 +74,9 @@ def play():
                     mask = mask.union(player_discovery[i])
             if(len(mask) > 0):
                 disp_world_state = mask_with_discovered(disp_world_state,mask)
-            os.system('clear')
+            
+            # Clear screen based on terminal (windows terminals have cls, others have clear)
+            os.system('cls||clear')
             print(players)
             render(disp_world_state)
         sys.stdout.flush()
