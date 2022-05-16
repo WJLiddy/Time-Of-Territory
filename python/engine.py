@@ -100,7 +100,6 @@ def generate_ID(generated):
 
 # generate the initial condition.
 # size must be divisible by two.
-# reviewed
 def gen_world(size,seed):
     if(seed is not None):
         random.seed(seed)
@@ -169,7 +168,6 @@ def gen_world(size,seed):
 
     return new_world_state, new_players, new_generated
 
-# reviewed
 def adjacent_building_locs(building_size, xoff, yoff):
     locs = []
     for x_adj in range(-1,building_size+1):
@@ -178,7 +176,6 @@ def adjacent_building_locs(building_size, xoff, yoff):
                 locs.append([xoff+x_adj,yoff+y_adj])
     return locs
 
-# reviewed
 def occupied(world_state, x, y, size):
     for dx in range(x, x + size):
         for dy in range(y, y + size):
@@ -188,7 +185,6 @@ def occupied(world_state, x, y, size):
                 return True
     return False
 
-# reviewed
 def player_spawn_area(world_state,idx):
     if(idx == 0):
         return [0,0]
@@ -200,7 +196,6 @@ def player_spawn_area(world_state,idx):
         return [0,len(world_state)-1]
     raise Exception("Invalid player index.")
 
-# reviewed
 def get_spawn_locs(world_state, xoff, yoff, building_size, player_idx):
     locs = []
     for loc in adjacent_building_locs(building_size, xoff, yoff):
@@ -212,7 +207,6 @@ def get_spawn_locs(world_state, xoff, yoff, building_size, player_idx):
     locs = sorted(locs, key=lambda x: pow(spawnloc[0] - x[0],2) + pow(spawnloc[1] - x[1],2))
     return locs
 
-# reviewed
 def handle_production(commands,world_state,players,emap, ex_moves):
   for c in commands:
         if(c["command"] == "p"):
@@ -230,7 +224,6 @@ def handle_production(commands,world_state,players,emap, ex_moves):
                     players[team]["wood"] -= production_cost(building[1]["type"])[1]
                     building[1]["traintime"] = PRODUCTION_TIME + 1
 
-# reviewed
 def handle_upgrades(commands,world_state,players,emap, ex_moves):
   for c in commands:
         if(c["command"] == "u"):
@@ -263,7 +256,6 @@ def handle_upgrades(commands,world_state,players,emap, ex_moves):
                     players[team]["wood"] -= wood_cost
                     players[team][upgrade_cat] += 1
 
-# reviewed
 def in_range(attackerid,defenderid,emap,world_state):
     atk_coord = emap[attackerid][0]
     def_coords = [emap[defenderid][0]]
@@ -283,7 +275,6 @@ def in_range(attackerid,defenderid,emap,world_state):
 
     return False
 
-# reviewed
 def handle_kills(commands, world_state, players, emap, ex_moves):
     for c in commands:
         if(c["command"] == "k"):
@@ -307,7 +298,6 @@ def handle_kills(commands, world_state, players, emap, ex_moves):
                     del emap[world_state[x][y]["id"]]
                 world_state[x][y] = None
 
-# reviewed
 def handle_construction(commands, world_state, players, emap, generated, ex_moves):
     for c in commands:
         if(is_building(c["command"])):
@@ -332,7 +322,6 @@ def handle_construction(commands, world_state, players, emap, generated, ex_move
                             for y in range(building_size(c["command"])):
                                 world_state[loc[0] + x][loc[1] + y] = bld_base
 
-# reviewed
 # emap not accurate anymore after this for moved units -> does this cause problems?
 def handle_movement(commands, world_state, players, emap, ex_moves):
     moves_issued_count = 1
@@ -362,7 +351,6 @@ def handle_movement(commands, world_state, players, emap, ex_moves):
                         moves_issued_count += 1
                         ex_moves.append(c)
 
-# reviewed
 def handle_repairs(commands, world_state, players, emap, ex_moves):
     for c in commands:
         if(c["command"] == "f"):
@@ -377,7 +365,6 @@ def handle_repairs(commands, world_state, players, emap, ex_moves):
                     building["constructed"] = True
                 building["hp"] = min(building["hp"], max_building_health(building["type"]))
 
-# reviewed
 def game_over(world_state, team_idx):
     # check if game is over.
     for x in range(len(world_state)):
@@ -386,7 +373,6 @@ def game_over(world_state, team_idx):
                 return False
     return True
 
-# reviewed
 def upkeep(world_state, players, generated):
     seen_buildings = set()
     # this will always reach the top left of a building first.
