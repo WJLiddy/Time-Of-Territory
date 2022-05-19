@@ -59,7 +59,7 @@ Can attack any unit within 8 tiles of it.
 
 Like the infantry, they only know two commands: attac**k** and **m**ove.
 
-The line of sight to the target can be obstructed: as long as it's within 8 tiles, the attack will land.
+The line of sight to the target cannot be obstructed: as long as it's within 8 tiles, the attack will land.
 
 Note that range is calcuated without diagonals, which means that valid targets must be in the "green" area in this diagram.
 
