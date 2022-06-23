@@ -331,6 +331,11 @@ For the sake of having a more balanced contest, some players will get handicaps,
 This is not yet implemented and the actual %s are TBD.
 
 ## CHANGELOG
+0.3
+- Renderer is much less stuttery
+- Engine runs much faster (cache line of sight calcs, use MAP_SIZE instead of len(world_state))
+- Fix bug where one AI timing out would stall all AIs
+
 0.2
 - Modify skeleton spawn rate, making it FAR more aggressive
 - Modify skeleton pathfinding
@@ -345,9 +350,9 @@ This is not yet implemented and the actual %s are TBD.
 - add handicap
 - arrow animation looks pretty bad
 - no death animations
-- no fow
+- no fow in renderer
 - you should be able to click minimap to move it
-- renderer isn't as fast as I'd like
+- renderer still isn't as fast as I'd like
 - cavlary animations work, but look like trash
 - no code for handling ties  
-- no real tests so some shit is prolly borked
+- no real tests

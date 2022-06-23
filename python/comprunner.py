@@ -8,6 +8,8 @@ from datetime import date
 
 LOAD_BONUS = .3 # bonus time for loading and unloading.
 
+PLAYER_COUNT = 4 # must match the count below.
+
 def session_name(players):
     if(not exists("../games/")):
         os.mkdir("../games/")
@@ -33,7 +35,7 @@ def runais(world_state,players,player_discovery,tick,sname):
     REALTIME_PRIORITY_CLASS = 0x00000100
     
     collated_orders = []
-    for team in range(4):
+    for team in range(PLAYER_COUNT):
         write_state_for_tick(world_state,players,player_discovery,team,tick,sname)
         pid = subprocess.Popen([sys.executable, "comprunner.py", str(team), str(tick), sname],creationflags=REALTIME_PRIORITY_CLASS | subprocess.DETACHED_PROCESS).pid
         start_time = time.time()
@@ -50,17 +52,16 @@ def runais(world_state,players,player_discovery,tick,sname):
                 #sys.stdout.flush()
                 pass
     
-    if(time.time() >= start_time + 1 + LOAD_BONUS):
-        print("AI timed out.")
-        sys.stdout.flush()
-        return []
+        if(time.time() >= start_time + 1 + LOAD_BONUS):
+            sys.stdout.flush()
+            print("AI has timed out.")
     
     return collated_orders
 
 def write_state_for_tick(world_state,players,player_discovery,i,tick,session):
     with open(masked_filename(session,i), 'wb') as outfile:
         d = {}
-        add_to_discovered(world_state,player_discovery[i],i)
+        add_to_discovered(world_state,player_discovery[i],i, los_cache())
         masked = mask_with_discovered(jsoncopy(world_state),player_discovery[i])
         d["world_state"] = masked
         d["players"] = strip_team_info(jsoncopy(players),i)
@@ -133,16 +134,16 @@ shuffle = False
 if len(sys.argv) == 1:
     play()
 elif "0" == sys.argv[1]:
-    import ai.archbtw.archbtw as p
+    import ai.metro.metro as p
     execmove(p)
 elif "1" in sys.argv[1]:
-    import ai.goldpls.goldpls as p
+    import ai.metro.metro as p
     execmove(p)
 elif "2" in sys.argv[1]:
-    import ai.russian.russian as p
+    import ai.archbtw.archbtw as p
     execmove(p)
 elif "3" in sys.argv[1]:
-    import ai.horseradish.horseradish as p
+    import ai.archbtw.archbtw as p
     execmove(p)
 
 

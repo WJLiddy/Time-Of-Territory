@@ -179,7 +179,7 @@ def adjacent_building_locs(building_size, xoff, yoff):
 def occupied(world_state, x, y, size):
     for dx in range(x, x + size):
         for dy in range(y, y + size):
-            if(dx < 0 or dy < 0 or dx >= len(world_state) or dy >= len(world_state)):
+            if(dx < 0 or dy < 0 or dx >= MAP_SIZE or dy >= MAP_SIZE):
                 return True
             if(world_state[dx][dy] != None):
                 return True
@@ -189,11 +189,11 @@ def player_spawn_area(world_state,idx):
     if(idx == 0):
         return [0,0]
     if(idx == 1):
-        return [len(world_state)-1,len(world_state)-1]
+        return [MAP_SIZE-1,MAP_SIZE-1]
     if(idx == 2):
-        return [len(world_state)-1,0]
+        return [MAP_SIZE-1,0]
     if(idx == 3):
-        return [0,len(world_state)-1]
+        return [0,MAP_SIZE-1]
     raise Exception("Invalid player index.")
 
 def get_spawn_locs(world_state, xoff, yoff, building_size, player_idx):
@@ -290,8 +290,8 @@ def handle_kills(commands, world_state, players, emap, ex_moves):
                     players[attacker[1]["team"]]["gold"] += 1
 
     # clean up anything that died.
-    for x in range(len(world_state)):
-        for y in range(len(world_state[x])):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
             if(world_state[x][y] is not None and world_state[x][y]["hp"] <= 0):
                 # if a building was destroyed, we only need to remove from emap once.
                 if world_state[x][y]["id"] in emap:
@@ -367,8 +367,8 @@ def handle_repairs(commands, world_state, players, emap, ex_moves):
 
 def game_over(world_state, team_idx):
     # check if game is over.
-    for x in range(len(world_state)):
-        for y in range(len(world_state[x])):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
             if(world_state[x][y] is not None and world_state[x][y]["team"] == team_idx):
                 return False
     return True
@@ -376,8 +376,8 @@ def game_over(world_state, team_idx):
 def upkeep(world_state, players, generated):
     seen_buildings = set()
     # this will always reach the top left of a building first.
-    for x in range(len(world_state)):
-        for y in range(len(world_state)):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
             if(world_state[x][y] is not None and is_building(world_state[x][y]["type"]) and (not world_state[x][y]["id"] in seen_buildings)):
                 seen_buildings.add(world_state[x][y]["id"])
                 if(world_state[x][y]["traintime"] == 1):
@@ -438,19 +438,21 @@ def command_valid(command):
 def countpop(world_state, team):
     pop = 0
     buildings_counted = set()
-    for x in range(len(world_state)):
-        for y in range(len(world_state[x])):
-            if(world_state[x][y] is not None and is_unit(world_state[x][y]["type"]) and world_state[x][y]["team"] == team):
-                pop += 1
-            if(world_state[x][y] is not None and is_building(world_state[x][y]["type"]) and world_state[x][y]["team"] == team and world_state[x][y]["traintime"] > 0 and world_state[x][y]["id"] not in buildings_counted):
-                pop += 1
-                buildings_counted.add(world_state[x][y]["id"])
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
+            t = world_state[x][y]
+            if(t is not None and t["team"] == team):
+                if(is_unit(t["type"])):
+                    pop += 1
+                elif(t["traintime"] > 0 and t["id"] not in buildings_counted):
+                    pop += 1
+                    buildings_counted.add(t["id"])
     return pop
 
 def countpopcap(world_state,team):
     pop = 0
-    for x in range(len(world_state)):
-        for y in range(len(world_state[x])):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
             if(world_state[x][y] is not None and world_state[x][y]["type"] in ["h","w"] and world_state[x][y]["constructed"] and world_state[x][y]["team"] == team):
                 pop += 1
     return pop
@@ -459,26 +461,33 @@ def countpopcap(world_state,team):
 # returns a list => [0] is coord [1] is unit itself.
 def emap_from_worldstate(world_state):
     emap = {}
-    for x in range(len(world_state)):
-        for y in range(len(world_state[x])):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
             if(world_state[x][y] is not None and (not world_state[x][y]["id"] in emap)):
                 emap[world_state[x][y]["id"]] = ([x,y], world_state[x][y])
     return emap
 
-def add_to_discovered(world_state,discovered,player_idx):
-    for x in range(len(world_state)):
-        for y in range(len(world_state)):
-            if(world_state[x][y] is not None and world_state[x][y]["team"] == player_idx):
-                for dx in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT):
-                    for dy in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT):
-                        if((abs(dx) + abs(dy)) <= LINE_OF_SIGHT and (x+dx) >= 0 and (y+dy) >= 0 and (x+dx) < len(world_state) and (y+dy) < len(world_state)):
-                            idx = ((dy+y) * len(world_state)) + (dx+x)
+def los_cache():
+    out = []
+    for dx in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT):
+        for dy in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT):  
+            if((abs(dx) + abs(dy)) <= LINE_OF_SIGHT):
+                out.append([dx,dy])
+    return out
+
+def add_to_discovered(world_state,discovered,player_idx, lc):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
+                if(world_state[x][y] is not None and world_state[x][y]["team"] == player_idx):
+                    for d in lc:
+                        if((x+d[0]) >= 0 and (y+d[1]) >= 0 and (x+d[0]) < MAP_SIZE and (y+d[1]) < MAP_SIZE):
+                            idx = ((d[1]+y) * MAP_SIZE) + (d[0]+x)
                             discovered.add(idx)
 
 def mask_with_discovered(world_state,discovered):
-    for x in range(len(world_state)):
-        for y in range(len(world_state)):
-            idx = (y * len(world_state)) + x
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
+            idx = (y * MAP_SIZE) + x
             if(idx not in discovered):
                 world_state[x][y] = "u"
     return world_state
@@ -513,10 +522,10 @@ def spawn_skeletons(world_state,tick,new_generated):
         to_spawn = SKEL_TICKS[tick // 500]
 
     if(to_spawn > 0):
-        spawn_skeletons_for_area(world_state,[0,0],[len(world_state)//2,len(world_state)//2],0,to_spawn,new_generated)
-        spawn_skeletons_for_area(world_state,[len(world_state)//2,len(world_state)//2],[len(world_state),len(world_state)],1,to_spawn,new_generated)
-        spawn_skeletons_for_area(world_state,[len(world_state)//2,0],[len(world_state),len(world_state)//2],2,to_spawn,new_generated)
-        spawn_skeletons_for_area(world_state,[0,len(world_state)//2],[len(world_state)//2,len(world_state)],3,to_spawn,new_generated)
+        spawn_skeletons_for_area(world_state,[0,0],[MAP_SIZE//2,MAP_SIZE//2],0,to_spawn,new_generated)
+        spawn_skeletons_for_area(world_state,[MAP_SIZE//2,MAP_SIZE//2],[MAP_SIZE,MAP_SIZE],1,to_spawn,new_generated)
+        spawn_skeletons_for_area(world_state,[MAP_SIZE//2,0],[MAP_SIZE,MAP_SIZE//2],2,to_spawn,new_generated)
+        spawn_skeletons_for_area(world_state,[0,MAP_SIZE//2],[MAP_SIZE//2,MAP_SIZE],3,to_spawn,new_generated)
 
 def sign(x):
     if(x == 0):
@@ -527,15 +536,15 @@ def sign(x):
 
 def skele_moves(world_state):
     moves = []
-    for x in range(len(world_state)):
-        for y in range(len(world_state[x])):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
             if(world_state[x][y] is not None and world_state[x][y]["type"] == "a" and world_state[x][y]["team"] == -2):
 
                 # scan for attackers, we pick one randonmly
                 targets = []
                 for dx in range(-ARC_RANGE,1+ARC_RANGE):
                     for dy in range(-ARC_RANGE,1+ARC_RANGE):
-                        if((abs(dx) + abs(dy)) <= ARC_RANGE and (x+dx) >= 0 and (y+dy) >= 0 and (x+dx) < len(world_state) and (y+dy) < len(world_state)):
+                        if((abs(dx) + abs(dy)) <= ARC_RANGE and (x+dx) >= 0 and (y+dy) >= 0 and (x+dx) < MAP_SIZE and (y+dy) < MAP_SIZE):
                             if(world_state[x+dx][y+dy] is not None and world_state[x+dx][y+dy]["team"] >= 0):
                                 targets.append([x+dx,y+dy])
 
@@ -547,7 +556,7 @@ def skele_moves(world_state):
                     moves.append(c)
                     continue
 
-                modulo = len(world_state) // 2
+                modulo = MAP_SIZE // 2
                 # use the ID to choose the move spot for skeles
                 x_idx = world_state[x][y]["id"] % modulo
                 y_idx = (world_state[x][y]["id"] // modulo) % modulo
@@ -560,10 +569,10 @@ def skele_moves(world_state):
 
 
                 if(x >= modulo):
-                    x_idx = len(world_state)-1-x_idx
+                    x_idx = MAP_SIZE-1-x_idx
 
                 if(y >= modulo):
-                    y_idx = len(world_state)-1-y_idx
+                    y_idx = MAP_SIZE-1-y_idx
 
                 
                 # x_idx, y_idx this is where the skele should go.
@@ -631,8 +640,8 @@ def process(commands, world_state, players, tick, generatedIDs, ex_moves):
     return False
 
 def remove_team(t,world_state):
-    for x in range(len(world_state)):
-        for y in range(len(world_state)):
+    for x in range(MAP_SIZE):
+        for y in range(MAP_SIZE):
             if(world_state[x][y] is not None and world_state[x][y]["team"] == t):
                 world_state[x][y] = None
 
