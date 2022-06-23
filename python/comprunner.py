@@ -134,10 +134,10 @@ shuffle = False
 if len(sys.argv) == 1:
     play()
 elif "0" == sys.argv[1]:
-    import ai.metro.metro as p
+    import ai.archbtw.archbtw as p
     execmove(p)
 elif "1" in sys.argv[1]:
-    import ai.metro.metro as p
+    import ai.archbtw.archbtw as p
     execmove(p)
 elif "2" in sys.argv[1]:
     import ai.archbtw.archbtw as p
