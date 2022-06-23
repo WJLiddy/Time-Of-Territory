@@ -61,7 +61,7 @@ def runais(world_state,players,player_discovery,tick,sname):
 def write_state_for_tick(world_state,players,player_discovery,i,tick,session):
     with open(masked_filename(session,i), 'wb') as outfile:
         d = {}
-        add_to_discovered(world_state,player_discovery[i],i, los_cache())
+        add_to_discovered(world_state,player_discovery[i],i)
         masked = mask_with_discovered(jsoncopy(world_state),player_discovery[i])
         d["world_state"] = masked
         d["players"] = strip_team_info(jsoncopy(players),i)
