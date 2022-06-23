@@ -44,14 +44,13 @@ FOW4 = "-f3" in sys.argv
 def play():
     world_state, players, generatedIDs, player_discovery = new_game(PLAYERS, SEED, shuffle)
     FOW_to_render = [FOW1,FOW2,FOW3,FOW4]
-    lc = los_cache()
     tick = 0
     while(True):
         collated_orders = []
 
         for i in range(4):
             if(PLAYERS[i] is not None):
-                add_to_discovered(world_state,player_discovery[i],i,lc)
+                add_to_discovered(world_state,player_discovery[i],i)
                 masked = mask_with_discovered(jsoncopy(world_state),player_discovery[i])
                 for c in PLAYERS[i].run(masked,strip_team_info(jsoncopy(players),i),i):
                     c["team"] = i
