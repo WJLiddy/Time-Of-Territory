@@ -91,6 +91,8 @@ ID_MAX = 2 ** 30
 # map size
 MAP_SIZE = 96
 
+LOS_CACHE = [[dx, dy] for dx in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT) for dy in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT) if abs(dx) + abs(dy) <= LINE_OF_SIGHT]
+
 def generate_ID(generated):
     val = random.randint(0,ID_MAX)
     while(val in generated):
@@ -467,19 +469,11 @@ def emap_from_worldstate(world_state):
                 emap[world_state[x][y]["id"]] = ([x,y], world_state[x][y])
     return emap
 
-def los_cache():
-    out = []
-    for dx in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT):
-        for dy in range(-LINE_OF_SIGHT,1+LINE_OF_SIGHT):  
-            if((abs(dx) + abs(dy)) <= LINE_OF_SIGHT):
-                out.append([dx,dy])
-    return out
-
-def add_to_discovered(world_state,discovered,player_idx, lc):
+def add_to_discovered(world_state,discovered,player_idx):
     for x in range(MAP_SIZE):
         for y in range(MAP_SIZE):
                 if(world_state[x][y] is not None and world_state[x][y]["team"] == player_idx):
-                    for d in lc:
+                    for d in LOS_CACHE:
                         if((x+d[0]) >= 0 and (y+d[1]) >= 0 and (x+d[0]) < MAP_SIZE and (y+d[1]) < MAP_SIZE):
                             idx = ((d[1]+y) * MAP_SIZE) + (d[0]+x)
                             discovered.add(idx)
