@@ -331,15 +331,9 @@ When you're ready for primetime, use comprunner.py. It will run the game and sav
 - Fix bugs in sample AIs
 - Write WAY more documenation
 
-## TODO
+## Things I may add in the future
 - run AI from arbitrary game state
-- saved games are FREAKIN HUGE
-- add handicap
 - arrow animation looks pretty bad
 - no death animations
 - no fow in renderer
-- you should be able to click minimap to move it
-- renderer still isn't as fast as I'd like
 - cavlary animations work, but look like trash
-- no code for handling ties  
-- no real tests
